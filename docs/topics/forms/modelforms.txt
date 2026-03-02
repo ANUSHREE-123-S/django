@@ -167,6 +167,27 @@ In addition, each generated form field has attributes set as follows:
 Finally, note that you can override the form field used for a given model
 field. See `Overriding the default fields`_ below.
 
+Custom form fields for ForeignKey
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you override ``ForeignKey.formfield()`` to use a custom form field
+(e.g., a subclass of ``forms.Field`` instead of ``ModelChoiceField``),
+be aware that Django may pass additional keyword arguments such as
+``limit_choices_to`` to the form field constructor.
+
+Custom form fields used with ``ForeignKey`` must therefore be prepared
+to accept and handle (or remove) unexpected keyword arguments. A common
+pattern is to ``pop()`` unsupported keyword arguments in ``__init__()``
+before calling ``super()``::
+
+    class CustomIntegerField(forms.IntegerField):
+        def __init__(self, *args, **kwargs):
+            kwargs.pop("limit_choices_to", None)
+            super().__init__(*args, **kwargs)
+
+Failing to do so may result in errors when ``ModelForm`` classes are
+imported.
+
 A full example
 --------------
 
